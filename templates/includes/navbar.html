@@ -1,0 +1,111 @@
+{% load static %}
+
+<style>
+    /* Header Styles */
+    .header {
+        background-color: #87CEEB;
+        color: white;
+        padding: 10px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Navigation Bar Styles */
+    .navbar {
+        background-color: transparent;
+    }
+
+    .navbar-brand {
+        font-size: 24px;
+        color: bisque;
+    }
+
+    /* Set text color to white for all content within the navbar */
+    .main-nav a,
+    .nav-link.header-login {
+        color: white;
+    }
+
+    /* Responsive Styling */
+    @media (max-width: 768px) {
+        .main-menu-wrapper {
+            display: none;
+        }
+        .nav.header-navbar-rht {
+            margin-left: 0;
+        }
+    }
+</style>
+
+
+
+<!-- Header -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Generation System</title>
+    
+    <!-- Include your CSS file -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/navbar.css' %}">
+</head>
+<header class="header">
+    <nav class="navbar navbar-expand-lg header-nav"> 
+       
+        <div class="navbar-header">
+            <a id="mobile_btn" href="javascript:void(0);">
+                <span class="bar-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </a>
+           
+            <a href="{% url 'home' %}" class="navbar-brand logo" id="mainportal">
+                <h3 class="logo-text">Question Generation System</h3>
+            </a>
+        </div>
+        <div class="main-menu-wrapper" style="margin-left: 190px;">
+            <ul class="main-nav">
+                <li class="nav-item has-submenu">
+                    <a href="#">Features</a>
+                </li>
+            </ul>		 
+        </div>		
+        <ul class="nav header-navbar-rht" style="margin-left: 500px;">
+            <li class="nav-item contact-item">
+                <div class="header-contact-detail">
+                    {% if user.is_authenticated %}
+                        <p class="contact-header" style="color: white;">Welcome | {{ user.first_name }}</p>
+                        {% if user.user_type == 'user' %}
+                            <p class="contact-info-header"><a href="{% url 'generate_question' %}" style="color: white;">Dashboard</a></p>
+                        {% else %}
+                            <p class="contact-info-header"><a href="{% url 'generate_question' %}" style="color: white;">Dashboard</a></p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </li>
+            {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link header-login" href="{% url 'logout' %}" style="color: white; background-color: blue;">Logout</a>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link header-login" href="{% url 'login' %}" style="color: white; background-color: green;">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link header-login" href="{% url 'register' %}" style="color: white; background-color: orange;">Register</a>
+                </li>
+            {% endif %}
+        </ul>
+        
+        
+    </nav>
+</header>
+<!-- /Header -->
+
+
+
+

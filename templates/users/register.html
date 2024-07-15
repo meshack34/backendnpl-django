@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    /* Existing styles */
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        font-size: 14px;
+        color: #666;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-control {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 10px;
+        font-size: 16px;
+        color: #333;
+        width: 100%;
+    }
+
+    /* Additional styles */
+    @media (max-width: 768px) {
+        .col-md-6 {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+    }
+</style>
+
+<!-- Page Content -->
+<div class="content">
+    <div class="container-fluid">
+        
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                    
+                <!-- Register Content -->
+                <div class="account-content">
+                    <div class="row align-items-center justify-content-center">
+                      
+                        <div class="col-md-12 col-lg-6 login-left">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="login-header">
+                                        <h3 class="text-primary">Create an Account</h3>
+                                        <p class="text-muted">Join our question generation community.</p>
+                                    </div>
+                                    
+                                    <!-- Register Form -->
+                                    <form action="{% url 'register' %}" method="POST">
+                                        {% csrf_token %}
+                                        
+                                        <div class="form-group">
+                                            <label for="first_name">First Name</label>
+                                            {{ form.first_name }}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="last_name">Last Name</label>
+                                            {{ form.last_name }}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Email</label>
+                                            {{ form.email }}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="phone_number">Mobile Number</label>
+                                            {{ form.phone_number }}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="password">Password</label>
+                                            {{ form.password }}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="confirm_password">Confirm Password</label>
+                                            {{ form.confirm_password }}
+                                        </div>
+                                        
+                                        <div class="text-center">
+                                            <button class="btn btn-primary btn-block" type="submit">Sign Up</button>
+                                        </div>
+                                        <div class="login-or">
+                                            <span class="or-line"></span>
+                                            <span class="text-muted">Already have an account? <a class="forgot-link" href="{% url 'login' %}">Login</a></span>
+                                        </div>
+                                    </form>
+                                    <!-- /Register Form -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Register Content -->
+                    
+            </div>
+        </div>
+
+    </div>
+
+</div>		
+<!-- /Page Content -->
+   
+{% endblock content %}

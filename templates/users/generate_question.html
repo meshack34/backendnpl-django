@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Questions</title>
+</head>
+<body>
+    <h1>Generate Questions from Text</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" name="question_type" value="with_answers">Generate Questions with Simple Answers</button>
+        <button type="submit" name="question_type" value="without_answers">Generate Multiple Choice Questions</button>
+    </form>
+
+    {% if questions %}
+        <h2>Generated Questions</h2>
+        {% if question_type == 'with_answers' %}
+            <h3>Questions with Simple Answers</h3>
+            <ul>
+                {% for question in questions %}
+                    <li>
+                        {{ question.question }}
+                        <ul>
+                            <li>Answer: {{ question.answer }}</li>
+                        </ul>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <h3>Multiple Choice Questions</h3>
+            <ul>
+                {% for question in questions %}
+                    <li>
+                        {{ question.question }}
+                        <ul>
+                            {% for option in question.answer %}
+                                <li>{{ option.answer }}{% if option.correct %} (Correct){% endif %}</li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endif %}
+</body>
+</html>

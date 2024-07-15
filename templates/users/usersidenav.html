@@ -1,0 +1,48 @@
+
+<!-- Profile Sidebar -->
+<div class="col-md-5 col-lg-4 col-xl-3 theiaStickySidebar">
+    <div class="profile-sidebar">
+    <div class="widget-profile pro-widget-content">
+        <div class="profile-info-widget">
+            {% if user.profile_image %}
+                <a href="#" class="booking-doc-img">
+                    <img src="{{ user.profile_image.url }}" alt="User Image">
+                </a>
+            {% else %}
+            <a href="#" class="booking-doc-img">
+                <img src="#" alt="User Image">
+            </a>
+            {% endif %}
+        <div class="profile-det-info">
+            <h3>{{ user.user.first_name }} {{user.user.last_name}}</h3>
+            <div class="patient-details">
+                <h5> </h5>
+                <h5 class="mb-0"></h5>
+            </div>
+        </div>
+    </div>
+    </div>
+    <div class="dashboard-widget">
+        <nav class="dashboard-menu">
+            <ul>
+                    <li class="active">
+                        <a href="{% url 'generate_question' %}">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                   
+                    <li>
+                        <a href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </li>
+            
+            </ul>
+        </nav>
+        </div>
+    
+    </div>
+    </div>
+    <!-- / Profile Sidebar -->

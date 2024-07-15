@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Question</title>
+</head>
+<body>
+    <h1>Generate Question</h1>
+    <div id="generatedQuestion"></div> <!-- This is where the generated question will be displayed -->
+    
+    <form id="generateForm" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Generate Question">
+    </form>
+
+    <div id="question"></div>
+    <script>
+        document.querySelector('#generateForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var text = document.querySelector('#id_text').value;
+            var csrfToken = document.cookie.match(/csrftoken=([^ ;]+)/)[1];
+    
+            fetch('/generate_question/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ text: text })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // Check the response in the console
+                document.querySelector('#generatedQuestion').innerText = data.question;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+    
+</body>
+</html>

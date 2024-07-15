@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Our Question Generation System</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+   
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        /* Custom styles for the card slider */
+        .carousel-card {
+            background-color: #f5f5f5; /* Update the background color here */
+            border: 3px solid #e0e0e0;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 40px; /* Adjust padding */
+            margin: 20px auto; /* Center content */
+            max-width: 600px; /* Limit content width */
+        }
+
+        .carousel-card-content {
+            padding: 20px;
+        }
+
+        .carousel-caption {
+            padding: 10px;
+            border-radius: 0 0 10px 10px;
+            color: #333;
+        }
+
+        .content-container {
+            min-height: 400px; /* Adjust as needed */
+        }
+
+        /* Style the title */
+        .carousel-card h3 {
+            color: #333; /* Update the title color */
+            font-size: 24px;
+        }
+
+        /* Style the description */
+        .carousel-card p {
+            color: #666; /* Update the description color */
+        }
+
+        /* Restyled section header */
+        .section-header {
+            background-color: #3498db;
+            color: #fff;
+            padding: 40px 0; /* Adjust padding */
+            text-align: center;
+        }
+
+        .section-header h1 {
+            font-size: 32px; /* Increase font size */
+        }
+
+        .section-header p {
+            font-size: 18px; /* Increase font size */
+        }
+
+        /* Styling for the Contact Form section */
+        .section-specialities {
+            background-color: #f5f5f5; /* Set background color */
+            padding: 40px 0; /* Adjust padding */
+            text-align: center; /* Center content */
+        }
+
+        .section-specialities h2 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 20px; /* Adjust margin */
+        }
+
+        /* Style the form */
+        .section-specialities form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-specialities .form-group {
+            margin-bottom: 20px; /* Adjust margin */
+        }
+
+        .section-specialities label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Home Banner -->
+<section class="section-header" style="background-color: #BDE5E9;">
+    <h1>Welcome to Our Question Generation System</h1>
+    <p>Effortlessly generate questions from text with our advanced question generation system. Simplify your learning and teaching process with automated question creation.</p>
+    
+
+    <div id="card-carousel" class="carousel slide" data-ride="carousel" data-interval="1500">
+        <div class="carousel-inner">
+            {% for card in card_list %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <div class="carousel-card">
+                        <div class="carousel-card-content text-center">
+                            <h3>{{ card.title }}</h3>
+                            <p>{{ card.description }}</p>
+                            <p>{{ card.description2 }}</p>
+                        </div>
+                        <div class="carousel-caption">
+                            {{ card.caption }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <a class="carousel-control-prev" href="#card-carousel" role="button" data-slide="prev" style="margin-left: 270px;">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#card-carousel" role="button" data-slide="next" style="margin-right: 270px;">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
+    </div>
+    
+</section>
+<!-- /Home Banner -->
+
+
+<!-- Include Bootstrap JavaScript for the Carousel -->
+<script>
+    $(document).ready(function(){
+        $('#card-carousel').carousel();
+    });
+</script>
+</body>
+</html>
+{% endblock content %}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Questions</title>
+</head>
+<body>
+    <h1>Generate Questions</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="text_content">Enter Text:</label><br>
+        <textarea id="text_content" name="text_content" rows="4" cols="50">{{ text_content }}</textarea><br><br>
+        <input type="submit" value="Generate Questions">
+    </form>
+    
+    {% if qa_list %}
+    <h2>Generated Questions</h2>
+    <ul>
+        {% for qa in qa_list %}
+        <li>
+            <strong>Question:</strong> {{ qa.question }}<br>
+            <strong>Answer:</strong> {{ qa.answer }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</body>
+</html>

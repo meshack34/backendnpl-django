@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'users/usersidenav.html' %}
+            <div class="col-md-7 col-lg-8 col-xl-9" style="background-color: #f8f9fa; padding: 20px; border-radius: 5px;">
+                <h1 style="color: #343a40; margin-bottom: 20px;">Generate Questions</h1>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" name="question_type" value="with_answers">Generate Questions with Simple Answers</button>
+                    <button type="submit" name="question_type" value="without_answers">Generate Multiple Choice Questions</button>
+                </form>
+            
+                {% if questions %}
+                    <h2>Generated Questions</h2>
+                    {% if question_type == 'with_answers' %}
+                        <h3>Questions with Simple Answers</h3>
+                        <ul>
+                            {% for question in questions %}
+                                <li>
+                                    {{ question.question }}
+                                    <ul>
+                                        <li>Answer: {{ question.answer }}</li>
+                                    </ul>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <h3>Multiple Choice Questions</h3>
+                        <ul>
+                            {% for question in questions %}
+                                <li>
+                                    {{ question.question }}
+                                    <ul>
+                                        {% for option in question.answer %}
+                                            <li>{{ option.answer }}{% if option.correct %} (Correct){% endif %}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endif %}
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

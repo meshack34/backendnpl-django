@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <!-- Page Content -->
+<div class="content">
+    <div class="container-fluid">
+    
+<div class="row">
+ {% include 'users/usersidenav.html' %}
+
+<div class="col-md-7 col-lg-8 col-xl-9">
+
+    <h1>Generate Questions</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="text_content">Enter Text:</label><br>
+        <textarea id="text_content" name="text_content" rows="4" cols="50">{{ text_content }}</textarea><br><br>
+        <input type="submit" value="Generate Questions">
+    </form>
+    
+    {% if qa_list %}
+    <h2>Generated Questions</h2>
+    <ul>
+        {% for qa in qa_list %}
+        <li>
+            <strong>Question:</strong> {{ qa.question }}<br>
+            <strong>Answer:</strong> {{ qa.answer }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    
+</div>
+
+</div>
+
+    </div>
+</div>		
+    <!-- /Page Content -->
+{% endblock content %}

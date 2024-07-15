@@ -1,0 +1,71 @@
+
+
+# question_generationapp/views.py
+
+from django.shortcuts import render
+from django.http import JsonResponse
+from .forms import TextForm
+from .trainer.qg_train import train_question_generation_model
+from .trainer.qa_eval_train import evaluate_question_generation_model
+
+
+def generate_question_view(request):
+    if request.method == 'POST':
+        form = TextForm(request.POST)
+        if form.is_valid():
+            text = form.cleaned_data['text']
+            model = train_question_generation_model(text)  # Train the model if needed
+            question = evaluate_question_generation_model(model, text)
+            return JsonResponse({'question': question})  # Return the generated question as JSON
+    else:
+        form = TextForm()
+    return render(request, 'question_generationapp/generate_question.html', {'form': form})
+
+
+
+
+
+
+#question_generationapp/generate_question.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Question</title>
+</head>
+<body>
+    <h1>Generate Question</h1>
+    <form id="generateForm" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Generate Question">
+    </form>
+
+    <div id="question"></div>
+
+
+<script>
+    document.querySelector('form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var text = document.querySelector('#id_text').value;
+        fetch('/generate_question/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ text: text })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data); // Check the response in the console
+            document.querySelector('#question').innerText = data.question;
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
+</body>
+</html>
