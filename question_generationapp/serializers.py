@@ -43,19 +43,15 @@ class UserDetailSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-# class QuestionGenerationSerializer(serializers.Serializer):
-#     text = serializers.CharField()
-#     use_evaluator = serializers.BooleanField(default=True)
-#     num_questions = serializers.IntegerField(required=False, default=10)
-#     answer_style = serializers.ChoiceField(choices=["all", "sentences", "multiple_choice"], default="all")
-
 class GeneratedQuestionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = GeneratedQuestions
         fields = ['id', 'user', 'entered_text', 'generated_questions', 'created_at']
-        
+
+
 class QuestionGenerationSerializer(serializers.Serializer):
     text = serializers.CharField()
     use_evaluator = serializers.BooleanField(default=True)
     num_questions = serializers.IntegerField(required=False, default=10)
     answer_style = serializers.ChoiceField(choices=["all", "sentences", "multiple_choice"], default="all")
+     

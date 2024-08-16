@@ -5,6 +5,8 @@ import numpy as np
 import random
 import re
 import torch
+from transformers import T5Tokenizer, T5ForConditionalGeneration, BertTokenizer, BertForSequenceClassification
+
 from transformers import (
     AutoTokenizer,
     AutoModelForSeq2SeqLM,
@@ -23,23 +25,30 @@ class QuestionGenerator:
     by setting use_evaluator=False.
     """
 
+        
+        
     def __init__(self) -> None:
-
-        QG_PRETRAINED = "iarfmoose/t5-base-question-generator"
+        QG_PRETRAINED = "t5-large"
+        # QG_PRETRAINED = "iarfmoose/t5-base-question-generator"
         self.ANSWER_TOKEN = "<answer>"
         self.CONTEXT_TOKEN = "<context>"
         self.SEQ_LENGTH = 512
 
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu")
-
-        self.qg_tokenizer = AutoTokenizer.from_pretrained(
-            QG_PRETRAINED, use_fast=False)
-        self.qg_model = AutoModelForSeq2SeqLM.from_pretrained(QG_PRETRAINED)
+        self.qg_tokenizer = T5Tokenizer.from_pretrained(QG_PRETRAINED, use_fast=False)
+        self.qg_model = T5ForConditionalGeneration.from_pretrained(QG_PRETRAINED)
         self.qg_model.to(self.device)
         self.qg_model.eval()
 
         self.qa_evaluator = QAEvaluator()
+
+        # self.qg_tokenizer = AutoTokenizer.from_pretrained(
+        #     QG_PRETRAINED, use_fast=False)
+        # self.qg_model = AutoModelForSeq2SeqLM.from_pretrained(QG_PRETRAINED)
+        # self.qg_model.to(self.device)
+        # self.qg_model.eval()
+        # self.qa_evaluator = QAEvaluator()
 
     def generate(
         self,
@@ -322,28 +331,36 @@ class QuestionGenerator:
             qa_list.append(qa)
 
         return qa_list
+    
+# def __init__(self) -> None:
 
+    #     QAE_PRETRAINED = "iarfmoose/bert-base-cased-qa-evaluator"
+    #     self.SEQ_LENGTH = 512
+        # self.device = torch.device(
+        #     "cuda" if torch.cuda.is_available() else "cpu")
+        # self.qae_tokenizer = AutoTokenizer.from_pretrained(QAE_PRETRAINED)
+        # self.qae_model = AutoModelForSequenceClassification.from_pretrained(
+        #     QAE_PRETRAINED
+        # )
+        # self.qae_model.to(self.device)
+        # self.qae_model.eval()
 
 class QAEvaluator:
     """Wrapper for a transformer model which evaluates the quality of question-answer pairs.
     Given a QA pair, the model will generate a score. Scores can be used to rank and filter
     QA pairs.
     """
-
     def __init__(self) -> None:
-
-        QAE_PRETRAINED = "iarfmoose/bert-base-cased-qa-evaluator"
+        QAE_PRETRAINED = "bert-large-cased"
         self.SEQ_LENGTH = 512
 
-        self.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.qae_tokenizer = AutoTokenizer.from_pretrained(QAE_PRETRAINED)
-        self.qae_model = AutoModelForSequenceClassification.from_pretrained(
-            QAE_PRETRAINED
-        )
+        self.qae_tokenizer = BertTokenizer.from_pretrained(QAE_PRETRAINED)
+        self.qae_model = BertForSequenceClassification.from_pretrained(QAE_PRETRAINED)
         self.qae_model.to(self.device)
         self.qae_model.eval()
+    
 
     def encode_qa_pairs(self, questions: List[str], answers: List[str]) -> List[torch.tensor]:
         """Takes a list of questions and a list of answers and encodes them as a list of tensors."""
