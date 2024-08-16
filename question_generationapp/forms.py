@@ -6,6 +6,8 @@ from django.forms.fields import DateField
 from django.forms.widgets import PasswordInput
 from django import forms
 from django.forms import DateInput, DateField, PasswordInput
+from django import forms
+
 
    
 class RegistrationForm(forms.ModelForm):
@@ -37,20 +39,6 @@ class RegistrationForm(forms.ModelForm):
         return user
 
 
-class PatientForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ['profile_image', 'city', 'address', 'country', 'date_of_birth', 'blood_group', 'gender']
-
-    def __init__(self, *args, **kwargs):
-        super(PatientForm, self).__init__(*args, **kwargs)
-        self.fields['profile_image'].widget.attrs['class'] = 'upload'
-        self.fields['address'].widget.attrs['class'] = 'form-control'
-        self.fields['city'].widget.attrs['class'] = 'form-control'
-        self.fields['country'].widget.attrs['class'] = 'form-control'
-        self.fields['date_of_birth'].widget.attrs['class'] = 'form-control'
-
-
 class TextForm(forms.Form):
     text = forms.CharField(
         label='Enter Text',
@@ -58,17 +46,6 @@ class TextForm(forms.Form):
         max_length=1000,  
         help_text='Maximum 1000 characters'  
     )
-# from django import forms
-# from django import forms
-
-# class TextContentForm(forms.Form):
-#     text_content = forms.CharField(widget=forms.Textarea, label='Text Content')
-#     question_type = forms.ChoiceField(
-#         choices=[('with_answers', 'Questions with Answers'), ('without_answers', 'Questions without Answers')],
-#         label='Select Question Type',
-#         widget=forms.RadioSelect
-#     )
-from django import forms
 
 class TextContentForm(forms.Form):
     text_content = forms.CharField(widget=forms.Textarea, label='Text Content')

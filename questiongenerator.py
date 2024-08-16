@@ -1,4 +1,3 @@
-#questiongenerator.py
 import en_core_web_sm
 import json
 import numpy as np
@@ -6,36 +5,24 @@ import random
 import re
 import torch
 from transformers import T5Tokenizer, T5ForConditionalGeneration, BertTokenizer, BertForSequenceClassification
-
-from transformers import (
-    AutoTokenizer,
-    AutoModelForSeq2SeqLM,
-    AutoModelForSequenceClassification,
-)
 from typing import Any, List, Mapping, Tuple
 
-
 class QuestionGenerator:
-    """A transformer-based NLP system for generating reading comprehension-style questions from
-    texts. It can generate full sentence questions, multiple choice questions, or a mix of the
-    two styles.
+    """A transformer-based NLP system for generating reading comprehension-style questions from texts.
+    It can generate full sentence questions, multiple choice questions, or a mix of the two styles.
 
-    To filter out low quality questions, questions are assigned a score and ranked once they have
-    been generated. Only the top k questions will be returned. This behaviour can be turned off
+    To filter out low-quality questions, questions are assigned a score and ranked once they have
+    been generated. Only the top k questions will be returned. This behavior can be turned off
     by setting use_evaluator=False.
     """
 
-        
-        
     def __init__(self) -> None:
         QG_PRETRAINED = "t5-large"
-        # QG_PRETRAINED = "iarfmoose/t5-base-question-generator"
         self.ANSWER_TOKEN = "<answer>"
         self.CONTEXT_TOKEN = "<context>"
         self.SEQ_LENGTH = 512
 
-        self.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.qg_tokenizer = T5Tokenizer.from_pretrained(QG_PRETRAINED, use_fast=False)
         self.qg_model = T5ForConditionalGeneration.from_pretrained(QG_PRETRAINED)
         self.qg_model.to(self.device)
@@ -43,31 +30,23 @@ class QuestionGenerator:
 
         self.qa_evaluator = QAEvaluator()
 
-        # self.qg_tokenizer = AutoTokenizer.from_pretrained(
-        #     QG_PRETRAINED, use_fast=False)
-        # self.qg_model = AutoModelForSeq2SeqLM.from_pretrained(QG_PRETRAINED)
-        # self.qg_model.to(self.device)
-        # self.qg_model.eval()
-        # self.qa_evaluator = QAEvaluator()
-
     def generate(
         self,
         article: str,
         use_evaluator: bool = True,
-        num_questions: bool = None,
+        num_questions: int = 10,
         answer_style: str = "all"
     ) -> List:
         """Takes an article and generates a set of question and answer pairs. If use_evaluator
-        is True then QA pairs will be ranked and filtered based on their quality. answer_style
-        should selected from ["all", "sentences", "multiple_choice"].
+        is True, then QA pairs will be ranked and filtered based on their quality. answer_style
+        should be selected from ["all", "sentences", "multiple_choice"].
         """
-
         print("Generating questions...\n")
 
         qg_inputs, qg_answers = self.generate_qg_inputs(article, answer_style)
         generated_questions = self.generate_questions_from_inputs(qg_inputs)
 
-        message = "{} questions doesn't match {} answers".format(
+        message = "{} questions don't match {} answers".format(
             len(generated_questions), len(qg_answers)
         )
         assert len(generated_questions) == len(qg_answers), message
@@ -79,15 +58,9 @@ class QuestionGenerator:
             )
             scores = self.qa_evaluator.get_scores(encoded_qa_pairs)
 
-            if num_questions:
-                qa_list = self._get_ranked_qa_pairs(
-                    generated_questions, qg_answers, scores, num_questions
-                )
-            else:
-                qa_list = self._get_ranked_qa_pairs(
-                    generated_questions, qg_answers, scores
-                )
-
+            qa_list = self._get_ranked_qa_pairs(
+                generated_questions, qg_answers, scores, num_questions
+            )
         else:
             print("Skipping evaluation step.\n")
             qa_list = self._get_all_qa_pairs(generated_questions, qg_answers)
@@ -113,7 +86,7 @@ class QuestionGenerator:
         inputs = []
         answers = []
 
-        if answer_style == "sentences" or answer_style == "all":
+        if answer_style in ["sentences", "all"]:
             segments = self._split_into_segments(text)
 
             for segment in segments:
@@ -124,11 +97,9 @@ class QuestionGenerator:
                 inputs.extend(prepped_inputs)
                 answers.extend(prepped_answers)
 
-        if answer_style == "multiple_choice" or answer_style == "all":
+        if answer_style in ["multiple_choice", "all"]:
             sentences = self._split_text(text)
-            prepped_inputs, prepped_answers = self._prepare_qg_inputs_MC(
-                sentences
-            )
+            prepped_inputs, prepped_answers = self._prepare_qg_inputs_MC(sentences)
             inputs.extend(prepped_inputs)
             answers.extend(prepped_answers)
 
@@ -157,11 +128,10 @@ class QuestionGenerator:
             if len(sentence) > MAX_SENTENCE_LEN:
                 cut_sentences.extend(re.split("[,;:)]", sentence))
 
-        # remove useless post-quote sentence fragments
         cut_sentences = [s for s in sentences if len(s.split(" ")) > 5]
         sentences = sentences + cut_sentences
 
-        return list(set([s.strip(" ") for s in sentences]))
+        return list(set([s.strip() for s in sentences]))
 
     def _split_into_segments(self, text: str) -> List[str]:
         """Splits a long text into segments short enough to be input into the transformer network.
@@ -203,7 +173,7 @@ class QuestionGenerator:
         return inputs, answers
 
     def _prepare_qg_inputs_MC(self, sentences: List[str]) -> Tuple[List[str], List[str]]:
-        """Performs NER on the text, and uses extracted entities are candidate answers for multiple-choice
+        """Performs NER on the text, and uses extracted entities as candidate answers for multiple-choice
         questions. Sentences are used as context, and entities as answers. Returns a tuple of (model inputs, answers). 
         Model inputs are "answer_token <answer text> context_token <context text>"
         """
@@ -215,9 +185,8 @@ class QuestionGenerator:
         for doc, sentence in zip(docs, sentences):
             entities = doc.ents
             if entities:
-
                 for entity in entities:
-                    qg_input = f"{self.ANSWER_TOKEN} {entity} {self.CONTEXT_TOKEN} {sentence}"
+                    qg_input = f"{self.ANSWER_TOKEN} {entity.text} {self.CONTEXT_TOKEN} {sentence}"
                     answers = self._get_MC_answers(entity, docs)
                     inputs_from_text.append(qg_input)
                     answers_from_text.append(answers)
@@ -231,34 +200,23 @@ class QuestionGenerator:
         entities = []
 
         for doc in docs:
-            entities.extend([{"text": e.text, "label_": e.label_}
-                            for e in doc.ents])
+            entities.extend([{"text": e.text, "label_": e.label_} for e in doc.ents])
 
-        # remove duplicate elements
         entities_json = [json.dumps(kv) for kv in entities]
         pool = set(entities_json)
-        num_choices = (
-            min(4, len(pool)) - 1
-        )  # -1 because we already have the correct answer
+        num_choices = min(4, len(pool)) - 1
 
-        # add the correct answer
         final_choices = []
         correct_label = correct_answer.label_
         final_choices.append({"answer": correct_answer.text, "correct": True})
-        pool.remove(
-            json.dumps({"text": correct_answer.text,
-                       "label_": correct_answer.label_})
-        )
+        pool.remove(json.dumps({"text": correct_answer.text, "label_": correct_answer.label_}))
 
-        # find answers with the same NER label
         matches = [e for e in pool if correct_label in e]
 
-        # if we don't have enough then add some other random answers
         if len(matches) < num_choices:
             choices = matches
             pool = pool.difference(set(choices))
             choices.extend(random.sample(list(pool), num_choices - len(choices)))
-
         else:
             choices = random.sample(matches, num_choices)
 
@@ -276,173 +234,85 @@ class QuestionGenerator:
         a question sentence. The generated question is decoded and then returned.
         """
         encoded_input = self._encode_qg_input(qg_input)
-        output = self.qg_model.generate(input_ids=encoded_input["input_ids"])
+        encoded_input = encoded_input.to(self.device)
+        encoded_output = self.qg_model.generate(
+            input_ids=encoded_input["input_ids"],
+            attention_mask=encoded_input["attention_mask"],
+            max_length=64,
+        )
+
         question = self.qg_tokenizer.decode(
-            output[0],
+            encoded_output[0],
             skip_special_tokens=True
         )
+
         return question
 
-    def _encode_qg_input(self, qg_input: str) -> torch.tensor:
-        """Tokenizes a string and returns a tensor of input ids corresponding to indices of tokens in 
-        the vocab.
-        """
+    def _encode_qg_input(self, qg_input: str) -> Any:
+        """Encodes qg_input into tokens IDs that can be input into a transformer model."""
         return self.qg_tokenizer(
             qg_input,
-            padding='max_length',
-            max_length=self.SEQ_LENGTH,
             truncation=True,
-            return_tensors="pt",
-        ).to(self.device)
-
-    def _get_ranked_qa_pairs(
-        self, generated_questions: List[str], qg_answers: List[str], scores, num_questions: int = 10
-    ) -> List[Mapping[str, str]]:
-        """Ranks generated questions according to scores, and returns the top num_questions examples.
-        """
-        if num_questions > len(scores):
-            num_questions = len(scores)
-            print((
-                f"\nWas only able to generate {num_questions} questions.",
-                "For more questions, please input a longer text.")
-            )
-
-        qa_list = []
-
-        for i in range(num_questions):
-            index = scores[i]
-            qa = {
-                "question": generated_questions[index].split("?")[0] + "?",
-                "answer": qg_answers[index]
-            }
-            qa_list.append(qa)
-
-        return qa_list
-
-    def _get_all_qa_pairs(self, generated_questions: List[str], qg_answers: List[str]):
-        """Formats question and answer pairs without ranking or filtering."""
-        qa_list = []
-
-        for question, answer in zip(generated_questions, qg_answers):
-            qa = {
-                "question": question.split("?")[0] + "?",
-                "answer": answer
-            }
-            qa_list.append(qa)
-
-        return qa_list
-    
-# def __init__(self) -> None:
-
-    #     QAE_PRETRAINED = "iarfmoose/bert-base-cased-qa-evaluator"
-    #     self.SEQ_LENGTH = 512
-        # self.device = torch.device(
-        #     "cuda" if torch.cuda.is_available() else "cpu")
-        # self.qae_tokenizer = AutoTokenizer.from_pretrained(QAE_PRETRAINED)
-        # self.qae_model = AutoModelForSequenceClassification.from_pretrained(
-        #     QAE_PRETRAINED
-        # )
-        # self.qae_model.to(self.device)
-        # self.qae_model.eval()
-
-class QAEvaluator:
-    """Wrapper for a transformer model which evaluates the quality of question-answer pairs.
-    Given a QA pair, the model will generate a score. Scores can be used to rank and filter
-    QA pairs.
-    """
-    def __init__(self) -> None:
-        QAE_PRETRAINED = "bert-large-cased"
-        self.SEQ_LENGTH = 512
-
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-        self.qae_tokenizer = BertTokenizer.from_pretrained(QAE_PRETRAINED)
-        self.qae_model = BertForSequenceClassification.from_pretrained(QAE_PRETRAINED)
-        self.qae_model.to(self.device)
-        self.qae_model.eval()
-    
-
-    def encode_qa_pairs(self, questions: List[str], answers: List[str]) -> List[torch.tensor]:
-        """Takes a list of questions and a list of answers and encodes them as a list of tensors."""
-        encoded_pairs = []
-
-        for question, answer in zip(questions, answers):
-            encoded_qa = self._encode_qa(question, answer)
-            encoded_pairs.append(encoded_qa.to(self.device))
-
-        return encoded_pairs
-
-    def get_scores(self, encoded_qa_pairs: List[torch.tensor]) -> List[float]:
-        """Generates scores for a list of encoded QA pairs."""
-        scores = {}
-
-        for i in range(len(encoded_qa_pairs)):
-            scores[i] = self._evaluate_qa(encoded_qa_pairs[i])
-
-        return [
-            k for k, v in sorted(scores.items(), key=lambda item: item[1], reverse=True)
-        ]
-
-    def _encode_qa(self, question: str, answer: str) -> torch.tensor:
-        """Concatenates a question and answer, and then tokenizes them. Returns a tensor of 
-        input ids corresponding to indices in the vocab.
-        """
-        if type(answer) is list:
-            for a in answer:
-                if a["correct"]:
-                    correct_answer = a["answer"]
-        else:
-            correct_answer = answer
-
-        return self.qae_tokenizer(
-            text=question,
-            text_pair=correct_answer,
             padding="max_length",
             max_length=self.SEQ_LENGTH,
-            truncation=True,
-            return_tensors="pt",
+            return_tensors="pt"
         )
 
+    def _get_ranked_qa_pairs(
+        self, questions: List[str], answers: List[str], scores: Any, num_questions: int
+    ) -> List[Mapping[str, Any]]:
+        """Ranks and returns the top k question/answer pairs."""
+        qa_list = []
+
+        for i, s in enumerate(scores):
+            qa = {"question": questions[i], "answer": answers[i], "score": s}
+            qa_list.append(qa)
+
+        qa_list = sorted(qa_list, key=lambda x: x["score"], reverse=True)
+        qa_list = qa_list[:num_questions]
+
+        return qa_list
+
+    def _get_all_qa_pairs(
+        self, questions: List[str], answers: List[str]
+    ) -> List[Mapping[str, Any]]:
+        """Returns all question answer pairs."""
+        return [{"question": q, "answer": a} for q, a in zip(questions, answers)]
+
+
+class QAEvaluator:
+    """A BERT-based QA model for evaluating the quality of question-answer pairs.
+    Higher scores indicate better question-answer quality.
+    """
+
+    def __init__(self):
+        QAE_PRETRAINED = "bert-large-cased"
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.qa_evaluator_tokenizer = BertTokenizer.from_pretrained(QAE_PRETRAINED)
+        self.qa_evaluator = BertForSequenceClassification.from_pretrained(
+            QAE_PRETRAINED, num_labels=1
+        )
+        self.qa_evaluator.to(self.device)
+        self.qa_evaluator.eval()
+
     @torch.no_grad()
-    def _evaluate_qa(self, encoded_qa_pair: torch.tensor) -> float:
-        """Takes an encoded QA pair and returns a score."""
-        output = self.qae_model(**encoded_qa_pair)
-        return output[0][0][1]
+    def encode_qa_pairs(self, questions: List[str], answers: List[str]) -> Any:
+        """Encodes QA pairs for evaluation using a BERT model."""
+        encoded_qa_pairs = self.qa_evaluator_tokenizer(
+            questions,
+            answers,
+            truncation=True,
+            padding="max_length",
+            max_length=512,
+            return_tensors="pt"
+        )
 
+        return encoded_qa_pairs
 
-def print_qa(qa_list: List[Mapping[str, str]], show_answers: bool = True) -> None:
-    """Formats and prints a list of generated questions and answers."""
+    @torch.no_grad()
+    def get_scores(self, encoded_qa_pairs: Any) -> Any:
+        """Given a list of encoded QA pairs, returns scores for them."""
+        encoded_qa_pairs = encoded_qa_pairs.to(self.device)
+        outputs = self.qa_evaluator(**encoded_qa_pairs)
 
-    for i in range(len(qa_list)):
-        # wider space for 2 digit q nums
-        space = " " * int(np.where(i < 9, 3, 4))
-
-        print(f"{i + 1}) Q: {qa_list[i]['question']}")
-
-        answer = qa_list[i]["answer"]
-
-        # print a list of multiple choice answers
-        if type(answer) is list:
-
-            if show_answers:
-                print(
-                    f"{space}A: 1. {answer[0]['answer']} "
-                    f"{np.where(answer[0]['correct'], '(correct)', '')}"
-                )
-                for j in range(1, len(answer)):
-                    print(
-                        f"{space + '   '}{j + 1}. {answer[j]['answer']} "
-                        f"{np.where(answer[j]['correct']==True,'(correct)', '')}"
-                    )
-
-            else:
-                print(f"{space}A: 1. {answer[0]['answer']}")
-                for j in range(1, len(answer)):
-                    print(f"{space + '   '}{j + 1}. {answer[j]['answer']}")
-
-            print("")
-
-        # print full sentence answers
-        else:
-            if show_answers:
-                print(f"{space}A: {answer}\n")
+        return outputs[0].squeeze(-1).tolist()
