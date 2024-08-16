@@ -1,4 +1,3 @@
-# In need of such project contact meshackkimutai34@gmail.com or whatapp +254718908494
 
 # Online Exam Generator  
 ### 
